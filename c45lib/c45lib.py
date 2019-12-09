@@ -34,7 +34,6 @@ def calculate_entropy(dataset):
     if total == 0:
         return 0
     labels_count = get_attribute_count(dataset, len(dataset[0]) - 1)
-    print(labels_count)
 
     entropy = 0
 
@@ -77,8 +76,8 @@ def split_data(data, ignored_indexes):
                         left = []
                         right = []
                         expression = Expression(attribute_index, middle_value)
-                        for row_to_compare in range(len(sorted_data) - 2):
-                            print(attribute_index, row, row_to_compare)
+                        for row_to_compare in range(len(sorted_data) - 1):
+                            # print(attribute_index, row, row_to_compare)
                             if expression.compare_row(sorted_data[row_to_compare]):
                                 left.append(sorted_data[row_to_compare])
                             else:
@@ -90,6 +89,25 @@ def split_data(data, ignored_indexes):
                             best_expression = expression
                             max_gain = gain
                             divided_data = [left, right]
+
+            else:
+                divided = []
+                for value in attribute_values:
+                    divided.append([])
+
+                print(divided)
+                for value_index, value in enumerate(attribute_values):
+                    expression = Expression(attribute_index, value)
+                    for row in data:
+                        if expression.compare_row(row):
+                            divided[value_index].append(row)
+
+                    gain = calculate_gain(data, divided)
+
+                    if gain > max_gain:
+                        best_expression = expression
+                        max_gain = gain
+                        divided_data = divided
 
     return best_expression, divided_data
 
@@ -108,11 +126,11 @@ def generate_tree(data, ignored_indexes=[]):
     if len(data) == 0:
         return Node(None, None, [])
 
-    if len(data[0]) - len(ignored_indexes) == 2:
+    if len(data[0]) - len(ignored_indexes) == 1:
         return Node(count_classes(data), None, [])
 
     best_expression, divided_data = split_data(data, ignored_indexes)
-    print(divided_data)
+    print(best_expression)
     ignored_indexes.append(best_expression.col_index)
     return Node(None, best_expression, [generate_tree(sub_data, ignored_indexes) for sub_data in divided_data])
 

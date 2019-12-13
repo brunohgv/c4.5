@@ -5,7 +5,6 @@ from classes.Expression import Expression
 from classes.Node import Node
 from enum import Enum
 
-
 def get_data_from_file(file_path):
     data = []
     with open(file_path, 'rU') as file:
@@ -95,7 +94,6 @@ def split_data(data, ignored_indexes):
                 for value in attribute_values:
                     divided.append([])
 
-                print(divided)
                 for value_index, value in enumerate(attribute_values):
                     expression = Expression(attribute_index, value)
                     for row in data:
@@ -112,17 +110,7 @@ def split_data(data, ignored_indexes):
     return best_expression, divided_data
 
 
-def remove_column(data, column_index):
-    new_data = data
-
-    for index, row in enumerate(new_data):
-        del row[column_index]
-
-    return new_data
-
-
 def generate_tree(data, ignored_indexes=[]):
-
     if len(data) == 0:
         return Node(None, None, [])
 
@@ -130,22 +118,24 @@ def generate_tree(data, ignored_indexes=[]):
         return Node(count_classes(data), None, [])
 
     best_expression, divided_data = split_data(data, ignored_indexes)
-    print(best_expression)
     ignored_indexes.append(best_expression.col_index)
-    return Node(None, best_expression, [generate_tree(sub_data, ignored_indexes) for sub_data in divided_data])
+    children = []
+    for sub_data in divided_data:
+        children.append(generate_tree(sub_data, ignored_indexes))
+    return Node(None, best_expression, children)
 
 
-def print_tree(tree, depth=0):
+def print_tree(main_node, depth=0):
     spacer = ''
 
     for i in range(depth):
-        spacer += '    '
+        spacer += '  '
 
-    if tree.expression is None and tree.label is not None:
-        print("{0}{1}".format(spacer, tree.label))
+    if main_node.expression is None:
+        print("{0}{1}".format(spacer, main_node.label))
     else:
-        print("{0}{1}".format(spacer, tree.expression))
-        for child in tree.children:
+        print("{0}{1}".format(spacer, main_node.expression))
+        for child in main_node.children:
             print_tree(child, depth + 1)
 
 
